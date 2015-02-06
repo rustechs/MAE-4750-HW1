@@ -1,3 +1,3 @@
 uint8[] belowBlock
-bool hasObj
+uint8 hasObj
 bool openGrip
