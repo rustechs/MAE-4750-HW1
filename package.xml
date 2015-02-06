@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>am_zl_av_4750_hw1</name>
+  <version>0.1.0</version>
+  <description>MAE 4750 HW 1 Package</description>
+ 
+  <maintainer email="av333@cornell.edu">Alexander Volkov</maintainer>
+  <maintainer email="zl347@cornell.edu">Zhuo Li</maintainer>
+  <maintainer email="am859@cornell.edu">Anthony McNicoll</maintainer>
+
+  <license>BSD</license>
+
+  <author email="av333@cornell.edu">Alexander Volkov</author>
+  <author email="zl347@cornell.edu">Zhuo Li</author>
+  <author email="am859@cornell.edu">Anthony McNicoll</author>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+</package>
