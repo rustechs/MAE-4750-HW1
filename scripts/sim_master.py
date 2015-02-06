@@ -16,6 +16,7 @@ from am_z1_av_4750.srv import *
 #Grab /num_blocks and /configuration parameters from ROS server
 NUMBLOCKS = get_param('/num_blocks')
 INITIAL_CONFIG = get_param('/configuration')
+VALID_CONFIGS = ['scattered', 'stacked_ascending', 'stacked_descending']
 
 rospy.loginfo('Initial configuration specified as %s' % INITIAL_CONFIG)
 
@@ -45,6 +46,11 @@ else:
 
 # Attempt to perform a state update given the action and target specified in the
 # /move_robot service request. Return boolean to signify success or failure.
+# AKA THIS IS WHERE THE MAGIC HAPPENS
+# Entire state consists of:
+# A vector of NUMBLOCKS size describing block connectivity
+# Object presence flag
+# Open gripper flag
 def updateState(action, target):
 
     

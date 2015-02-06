@@ -6,6 +6,7 @@
 ## Group: am_zl_av_4750
 ## Members: Anthony McNicoll, Andy Li, Alex Volkov
 
+import sys
 import rospy
 from am_zl_av_4750.msg import *
 from am_z1_av_4750.srv import *
@@ -43,8 +44,25 @@ def cmdCallback(cmd):
         rospy.logwarn("Incorrect command: %s. No action taken" % cmd.data)
 
 # Deal with incoming /state topic messages
+# On every update, check if system state matches intended state
+# If not, send next required command
+# Otherwise, do nothing
+# AKA THIS IS WHERE THE MAGIC HAPPENS
 def stateCallback(data):
     
+    # Blah blah -- the magic part. compare target to current state
+    # Figure out next step toward target
+
+    # won't be checked exactly like this, but something like this...
+    if targetConfig != curConfig: 
+        try:
+            success = moveRobot(nextAction, nextBlock)
+            if not success:
+                rospy.logfatal("I'm afraid I can't do that, Dave")
+                sys.exit(1)
+        except rospy.ServiceException, e:
+            rospy.logfatal("Service call failed: %s" % e)
+            sys.exit(1)
 
 def controller():  
     
@@ -54,6 +72,9 @@ def controller():
     # Wait here until /move_robot service becomes available
     # Effectively waits for sim_master node to come online
     rospy.wait_for_service('move_robot')
+
+    # Alias service call as a function
+    moveRobot = rospy.ServiceProxy('move_robot', MoveRobot)
 
     # Register as subscriber on topic /state, handle incoming data with callback
     rospy.Subscriber('state', State, stateCallback)
