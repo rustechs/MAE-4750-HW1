@@ -17,6 +17,7 @@ from am_z1_av_4750.srv import *
 NUMBLOCKS = get_param('/num_blocks')
 INITIAL_CONFIG = get_param('/configuration')
 VALID_CONFIGS = ['scattered', 'stacked_ascending', 'stacked_descending']
+VALID_CMDS = ['open', 'close', 'moveTo', 'moveOver']
 
 rospy.loginfo('Initial configuration specified as %s' % INITIAL_CONFIG)
 
@@ -52,13 +53,27 @@ else:
 # Object presence flag
 # Open gripper flag
 def updateState(action, target):
-
+    rospy.loginfo("Attempting to carry out command %s on target %s" % (action, target))
+    
     
 # /move_robot service request handler
 def handle_move_robot(request):
     
-    # Attempt to update state, results in boolean
-    success = updateState(request.action, request.target)
+    # Check if action is an open or close command, in which case target must be 0
+    if (request.action in VALID_CMDS[:2]) and (target == 0):
+        # Valid arguments -- attempt to update state, results in boolean
+        success = updateState(request.action, request.target)
+    # Check if action is a move command, in which case target must be a valid block number (1 to NUMBLOCKS)
+    elif (request.action in VALID_CMDS[2:4]) and (target in range(1,NUMBLOCKS+1)):
+        # Valid arguments -- attempt to update state, results in boolean
+        success = updateState(request.action, request.target)
+    # If argument or target are invalid
+    else
+        # Yell at us and return False on service /move_robot
+        rospy.logwarn("Invalid command on /move_robot -- check syntax!")
+        success = False
+
+
 
     # return result as node's response to /move_robot service request
     return MoveRobotResponse(success)
