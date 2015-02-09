@@ -7,15 +7,16 @@
 ## Members: Anthony McNicoll, Andy Li, Alex Volkov
 
 import rospy
-from am_zl_av_4750.msg import *
-from am_z1_av_4750.srv import *
+from am_zl_av_4750_hw1.msg import *
+from am_zl_av_4750_hw1.srv import *
 
 #######################################################################################
 # BEGIN INITIAL PREP
 
 #Grab /num_blocks and /configuration parameters from ROS server
-NUMBLOCKS = get_param('/num_blocks')
-INITIAL_CONFIG = get_param('/configuration')
+#import pdb; pdb.set_trace()
+NUMBLOCKS = rospy.get_param('/num_blocks')
+INITIAL_CONFIG = rospy.get_param('/configuration')
 VALID_CONFIGS = ['scattered', 'stacked_ascending', 'stacked_descending']
 VALID_CMDS = ['open', 'close', 'moveTo', 'moveOver']
 
@@ -23,20 +24,19 @@ rospy.loginfo('Initial configuration specified as %s' % INITIAL_CONFIG)
 
 #Nth index is N+1th block, and value specifies number of block below
 bBlock = [0] * NUMBLOCKS
-
 hasObject = 0   # Initially no object in gripper
-openGripper = 1 # Initially gripper is open
+openGripper = True # Initially gripper is open
 
 # Set up bBlock to match initial configuration
 if INITIAL_CONFIG == 'scattered':
+    pass
     # bBlock all zeros
 elif INITIAL_CONFIG == 'stacked_ascending':
     bBlock = range(NUMBLOCKS)
 elif INITIAL_CONFIG == 'stacked_descending': 
     bBlock = range(NUMBLOCKS)
     bBlock = [x + 2 for x in belowBlock]
-    bBlock = belowBlock.pop()
-    bBlock = belowBlock.append(0)
+    bBlock[-1] = 0
 else:
     rospy.logwarn('Incorrect initial state specified, defaulting to scattered configuration')
     # bBlock all zeros
@@ -53,27 +53,50 @@ else:
 # Object presence flag
 # Open gripper flag
 def updateState(action, target):
+    global openGripper
+    global hasObject
+    global bBlock
+
     rospy.loginfo("Attempting to carry out command %s on target %s" % (action, target))
     
+    if str(action) == 'open':
+        openGripper = True
+        rospy.loginfo("Grip true")
+        
+    elif str(action) == 'close':
+        openGripper = False
+        rospy.loginfo("Grip false")
+
+    # Note that a collision (bringing cube to another cube) is not allowed for
+    elif str(action) == 'moveTo':
+        if openGripper:
+            hasObject = target
+        rospy.loginfo("MoveTo")
+
+    elif str(action) == 'moveOver':
+        if (hasObject > 0) and (openGripper is False):
+            bBlock[hasObject - 1] = target
+        rospy.loginfo("MoveOver")
+
+    return True
+
     
-# /move_robot service request handler
+# /move_robot service request handler.
 def handle_move_robot(request):
     
     # Check if action is an open or close command, in which case target must be 0
-    if (request.action in VALID_CMDS[:2]) and (target == 0):
+    if (request.action in VALID_CMDS[:2]) and (request.target == 0):
         # Valid arguments -- attempt to update state, results in boolean
         success = updateState(request.action, request.target)
     # Check if action is a move command, in which case target must be a valid block number (1 to NUMBLOCKS)
-    elif (request.action in VALID_CMDS[2:4]) and (target in range(1,NUMBLOCKS+1)):
+    elif (request.action in VALID_CMDS[2:4]) and (request.target in range(NUMBLOCKS+1)):
         # Valid arguments -- attempt to update state, results in boolean
         success = updateState(request.action, request.target)
     # If argument or target are invalid
-    else
+    else:
         # Yell at us and return False on service /move_robot
-        rospy.logwarn("Invalid command on /move_robot -- check syntax!")
+        rospy.logwarn("Invalid command on /move_robot:" +  str(request.action) + str(request.target))
         success = False
-
-
 
     # return result as node's response to /move_robot service request
     return MoveRobotResponse(success)

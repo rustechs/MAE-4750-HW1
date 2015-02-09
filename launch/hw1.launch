@@ -1,9 +1,9 @@
 <launch>
 
     <param name="num_blocks" type="int" value="10"/>
-    <param name="configuration type="string" value="scattered"/>
+    <param name="configuration" type="string" value="scattered"/>
 
     <node pkg="am_zl_av_4750_hw1" name="sim_master" type="sim_master"/>
-    <node pkg="am_z1_av_4750_hw1" name="controller" type="controller"/>
+    <node pkg="am_zl_av_4750_hw1" name="controller" type="controller"/>
 
 </launch>
